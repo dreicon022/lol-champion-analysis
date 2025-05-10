@@ -128,7 +128,6 @@ h2 {
     box-shadow: 0 0 10px rgba(10, 200, 185, 0.7);
 }
 
-/* Tier badges */
 .champion-tier {
     position: absolute;
     bottom: -5px;
@@ -185,6 +184,12 @@ h2 {
     align-items: center;
     width: 100px;
     text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.selected-champion:hover {
+    transform: translateY(-5px);
 }
 
 .selected-champion .champion-icon {
@@ -285,28 +290,103 @@ h2 {
     gap: 1.5rem;
 }
 
-.champion-stats {
+.winrate-comparison {
     display: flex;
-    justify-content: space-around;
-    text-align: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1rem 0;
 }
 
-.stat-box {
+.winrate-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vs-separator {
+    display: flex;
+    align-items: center;
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.synergy-score {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.synergy-label {
+    font-size: 1.1rem;
+    color: var(--accent-light);
+}
+
+.synergy-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+}
+
+.synergy-value.positive {
+    background-color: rgba(10, 200, 185, 0.2);
+    color: var(--success);
+}
+
+.synergy-value.negative {
+    background-color: rgba(209, 54, 57, 0.2);
+    color: var(--danger);
+}
+
+.synergy-value.neutral {
+    background-color: rgba(91, 91, 91, 0.2);
+    color: var(--neutral);
+}
+
+.synergy-description {
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    padding: 0 2rem;
+}
+
+.champion-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.champion-stat-container {
+    flex: 1;
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 1rem;
-    width: 150px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.stat-title {
-    color: var(--accent-light);
-    font-size: 0.9rem;
+.champion-stat-container h4 {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--accent-light);
+    padding-bottom: 0.5rem;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 0.5rem;
 }
 
+.stat-label {
+    color: var(--accent-light);
+    font-size: 0.9rem;
+}
+
 .stat-value {
-    font-size: 1.5rem;
     font-weight: bold;
 }
 
@@ -322,50 +402,6 @@ h2 {
     color: var(--neutral);
 }
 
-.champ-synergy {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    padding: 1rem;
-}
-
-.synergy-title {
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-}
-
-.synergy-description {
-    margin-bottom: 1rem;
-    line-height: 1.5;
-}
-
-/* Champion stats containers */
-.champion-stat-container {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-.champion-stat-container h4 {
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-    border-bottom: 1px solid var(--accent-light);
-    padding-bottom: 0.5rem;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    color: var(--accent-light);
-    font-size: 0.9rem;
-}
-
-/* Abilities section */
 .ability-item {
     margin-bottom: 1rem;
     padding-bottom: 1rem;
@@ -387,7 +423,6 @@ h2 {
     color: var(--accent-light);
 }
 
-/* Lane phase section */
 .lane-phase-container {
     display: flex;
     justify-content: space-between;
@@ -413,7 +448,6 @@ h2 {
     font-weight: bold;
 }
 
-/* Matchup tips */
 .matchup-tips {
     margin-top: 1.5rem;
 }
@@ -421,6 +455,7 @@ h2 {
 .matchup-tips h4 {
     color: var(--accent);
     margin-bottom: 0.5rem;
+    text-align: center;
 }
 
 .matchup-tips ul {
@@ -433,7 +468,6 @@ h2 {
     font-size: 0.9rem;
 }
 
-/* Counter picks and synergies */
 .counter-picks, .synergies {
     margin-top: 1.5rem;
 }
@@ -442,11 +476,12 @@ h2 {
     color: var(--accent-light);
     margin-bottom: 0.5rem;
     font-size: 1.1rem;
+    text-align: center;
 }
 
 .picks-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 1rem;
 }
 
@@ -502,6 +537,7 @@ h2 {
 .pick-name {
     font-size: 0.8rem;
     color: var(--text);
+    margin-bottom: 0.3rem;
 }
 
 .pick-value {
@@ -515,10 +551,6 @@ h2 {
 
 .loss-value {
     color: var(--danger);
-}
-
-.neutral-value {
-    color: var(--neutral);
 }
 
 .pick-reason {
@@ -554,6 +586,12 @@ h2 {
     margin-top: 0.5rem;
 }
 
+.empty-message {
+    text-align: center;
+    color: var(--accent-light);
+    padding: 1rem;
+}
+
 .tooltip {
     position: absolute;
     background-color: var(--secondary);
@@ -568,7 +606,6 @@ h2 {
     pointer-events: none;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -587,7 +624,6 @@ h2 {
     background: var(--accent);
 }
 
-/* Footer styles */
 footer {
     background-color: var(--secondary);
     padding: 1rem 2rem;
@@ -597,7 +633,6 @@ footer {
     margin-top: 2rem;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     .container {
         grid-template-columns: 1fr;
@@ -629,26 +664,19 @@ footer {
         margin-top: 1rem;
     }
     
-    .stat-box {
-        width: 100px;
-        padding: 0.8rem;
+    .champion-stats {
+        flex-direction: column;
     }
     
     .lane-phase-container {
         flex-direction: column;
     }
     
-    .champion-stat-container {
-        padding: 0.8rem;
-    }
-    
-    .ability-item {
-        padding-bottom: 0.8rem;
-        margin-bottom: 0.8rem;
+    .synergy-description {
+        padding: 0 0.5rem;
     }
 }
 
-/* Animation for champion selection */
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -657,36 +685,4 @@ footer {
 
 .champion-icon.selected {
     animation: pulse 1s ease-in-out;
-}
-
-/* Additional styles for matchup analysis */
-.matchup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.matchup-title {
-    font-size: 1.3rem;
-    color: var(--accent);
-}
-
-.matchup-score {
-    font-size: 1.2rem;
-    font-weight: bold;
-    padding: 0.3rem 0.8rem;
-    border-radius: 20px;
-    background-color: rgba(10, 200, 185, 0.2);
-    color: var(--success);
-}
-
-.matchup-score.negative {
-    background-color: rgba(209, 54, 57, 0.2);
-    color: var(--danger);
-}
-
-.matchup-score.neutral {
-    background-color: rgba(91, 91, 91, 0.2);
-    color: var(--neutral);
 }
