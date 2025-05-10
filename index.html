@@ -27,7 +27,7 @@
                 </div>
                 
                 <div class="selected-champions">
-                    <div class="selected-champion">
+                    <div class="selected-champion" id="first-selected-container">
                         <div class="champion-icon" id="first-selected">
                             <img src="https://ddragon.leagueoflegends.com/cdn/14.7.1/img/champion/Aatrox.png" alt="Select Champion">
                         </div>
@@ -36,7 +36,7 @@
                     
                     <div class="vs-text">VS</div>
                     
-                    <div class="selected-champion">
+                    <div class="selected-champion" id="second-selected-container">
                         <div class="champion-icon" id="second-selected">
                             <img src="https://ddragon.leagueoflegends.com/cdn/14.7.1/img/champion/Aatrox.png" alt="Select Champion">
                         </div>
@@ -68,13 +68,13 @@
                             <div class="matchup-overview">
                                 <div class="winrate-comparison">
                                     <div class="winrate-item">
-                                        <div class="winrate-champion" id="first-champion-name">Select Champion</div>
-                                        <div class="winrate-value" id="champ1-winrate">N/A</div>
+                                        <span id="first-champion-name-display"></span>
+                                        <span id="champ1-winrate">N/A</span>
                                     </div>
                                     <div class="vs-separator">VS</div>
                                     <div class="winrate-item">
-                                        <div class="winrate-champion" id="second-champion-name">Select Champion</div>
-                                        <div class="winrate-value" id="champ2-winrate">N/A</div>
+                                        <span id="second-champion-name-display"></span>
+                                        <span id="champ2-winrate">N/A</span>
                                     </div>
                                 </div>
                                 
@@ -97,13 +97,13 @@
                             
                             <div class="champion-stats">
                                 <div class="champion-stat-container">
-                                    <h4>Champion 1 Stats</h4>
+                                    <h4 id="champ1-name">Champion 1 Stats</h4>
                                     <div id="champ1-stats"></div>
                                     <div id="champ1-abilities"></div>
                                 </div>
                                 
                                 <div class="champion-stat-container">
-                                    <h4>Champion 2 Stats</h4>
+                                    <h4 id="champ2-name">Champion 2 Stats</h4>
                                     <div id="champ2-stats"></div>
                                     <div id="champ2-abilities"></div>
                                 </div>
@@ -130,7 +130,7 @@
     </main>
        
     <footer>
-        <p>League of Legends Champion Analysis Tool © 2025 •</p>
+        <p>League of Legends Champion Analysis Tool © 2025</p>
     </footer>
     
     <div class="tooltip" id="tooltip"></div>
