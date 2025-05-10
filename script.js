@@ -4,8 +4,10 @@ window.matchupsData = matchups;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Check if data is available
-    if (!window.championsData) {
-        console.error("Champions data is missing!");
+    if (!window.championsData || window.championsData.length === 0) {
+        console.error("Champions data is missing or empty!");
+        document.getElementById('champion-grid').innerHTML = 
+            '<div class="error">Failed to load champions data</div>';
         return;
     }
     
@@ -17,8 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('champion-search');
     const firstSelected = document.getElementById('first-selected');
     const secondSelected = document.getElementById('second-selected');
+    const firstSelectedContainer = document.getElementById('first-selected-container');
+    const secondSelectedContainer = document.getElementById('second-selected-container');
     const firstName = document.getElementById('first-champion-name');
     const secondName = document.getElementById('second-champion-name');
+    const firstNameDisplay = document.getElementById('first-champion-name-display');
+    const secondNameDisplay = document.getElementById('second-champion-name-display');
     const emptyState = document.querySelector('.empty-state');
     const analysisData = document.querySelector('.analysis-data');
     const champ1Winrate = document.getElementById('champ1-winrate');
@@ -34,6 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const champ2Stats = document.getElementById('champ2-stats');
     const champ1Abilities = document.getElementById('champ1-abilities');
     const champ2Abilities = document.getElementById('champ2-abilities');
+    const champ1NameHeader = document.getElementById('champ1-name');
+    const champ2NameHeader = document.getElementById('champ2-name');
     
     // State
     const state = {
@@ -71,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } catch (error) {
             console.error("Error rendering champions:", error);
+            grid.innerHTML = '<div class="error">Error displaying champions</div>';
         }
     }
 
@@ -82,8 +91,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const index = state.selectedChampions.findIndex(c => c.id === champ.id);
             
             if (index >= 0) {
+                // Deselect if already selected
                 state.selectedChampions.splice(index, 1);
             } else if (state.selectedChampions.length < 2) {
+                // Add to selection
                 state.selectedChampions.push(champ);
             }
             
@@ -107,19 +118,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const [first, second] = state.selectedChampions;
             
             // Reset both slots
-            firstSelected.classList.remove('selected');
-            secondSelected.classList.remove('selected');
+            firstSelectedContainer.classList.remove('selected');
+            secondSelectedContainer.classList.remove('selected');
             firstSelected.querySelector('img').src = 'https://ddragon.leagueoflegends.com/cdn/14.7.1/img/champion/Aatrox.png';
             secondSelected.querySelector('img').src = 'https://ddragon.leagueoflegends.com/cdn/14.7.1/img/champion/Aatrox.png';
             firstName.textContent = 'Select Champion';
             secondName.textContent = 'Select Champion';
+            firstNameDisplay.textContent = '';
+            secondNameDisplay.textContent = '';
             
             // Update first slot
             if (first) {
                 firstSelected.querySelector('img').src = first.image;
                 firstSelected.querySelector('img').alt = first.name;
                 firstName.textContent = first.name;
-                firstSelected.classList.add('selected');
+                firstNameDisplay.textContent = first.name;
+                firstSelectedContainer.classList.add('selected');
+                champ1NameHeader.textContent = `${first.name} Stats`;
                 
                 // Update champion 1 stats
                 updateChampionStats(first, champ1Stats, champ1Abilities);
@@ -130,7 +145,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 secondSelected.querySelector('img').src = second.image;
                 secondSelected.querySelector('img').alt = second.name;
                 secondName.textContent = second.name;
-                secondSelected.classList.add('selected');
+                secondNameDisplay.textContent = second.name;
+                secondSelectedContainer.classList.add('selected');
+                champ2NameHeader.textContent = `${second.name} Stats`;
                 
                 // Update champion 2 stats
                 updateChampionStats(second, champ2Stats, champ2Abilities);
@@ -144,44 +161,50 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateChampionStats(champion, statsContainer, abilitiesContainer) {
         if (!champion || !statsContainer || !abilitiesContainer) return;
         
-        // Update stats
-        statsContainer.innerHTML = `
-            <div class="stat-item">
-                <div class="stat-label">Win Rate</div>
-                <div class="stat-value ${getWinRateClass(champion.stats?.winRate)}">${champion.stats?.winRate || 'N/A'}%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Pick Rate</div>
-                <div class="stat-value">${champion.stats?.pickRate || 'N/A'}%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Ban Rate</div>
-                <div class="stat-value">${champion.stats?.banRate || 'N/A'}%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">KDA</div>
-                <div class="stat-value">${champion.stats?.kda || 'N/A'}</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Difficulty</div>
-                <div class="stat-value">${champion.stats?.difficulty || 'N/A'}/10</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Roles</div>
-                <div class="stat-value">${champion.roles?.join(', ') || 'N/A'}</div>
-            </div>
-        `;
-        
-        // Update abilities
-        abilitiesContainer.innerHTML = `
-            <h4>Abilities</h4>
-            ${champion.abilities?.map(ability => `
-                <div class="ability-item">
-                    <div class="ability-name">${ability.name}</div>
-                    <div class="ability-desc">${ability.description}</div>
+        try {
+            // Update stats
+            statsContainer.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-value ${getWinRateClass(champion.stats?.winRate)}">${champion.stats?.winRate || 'N/A'}%</div>
                 </div>
-            `).join('') || '<div class="no-abilities">No abilities data</div>'}
-        `;
+                <div class="stat-item">
+                    <div class="stat-label">Pick Rate</div>
+                    <div class="stat-value">${champion.stats?.pickRate || 'N/A'}%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Ban Rate</div>
+                    <div class="stat-value">${champion.stats?.banRate || 'N/A'}%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">KDA</div>
+                    <div class="stat-value">${champion.stats?.kda || 'N/A'}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Difficulty</div>
+                    <div class="stat-value">${champion.stats?.difficulty || 'N/A'}/10</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Roles</div>
+                    <div class="stat-value">${champion.roles?.join(', ') || 'N/A'}</div>
+                </div>
+            `;
+            
+            // Update abilities
+            abilitiesContainer.innerHTML = `
+                <h4>Abilities</h4>
+                ${champion.abilities?.map(ability => `
+                    <div class="ability-item">
+                        <div class="ability-name">${ability.name}</div>
+                        <div class="ability-desc">${ability.description}</div>
+                    </div>
+                `).join('') || '<div class="no-abilities">No abilities data</div>'}
+            `;
+        } catch (error) {
+            console.error("Error updating champion stats:", error);
+            statsContainer.innerHTML = '<div class="error">Error loading stats</div>';
+            abilitiesContainer.innerHTML = '<div class="error">Error loading abilities</div>';
+        }
     }
     
     // Helper function to determine win rate class
@@ -211,27 +234,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Set matchup data or default
             if (matchup) {
-                combinedSynergy.textContent = matchup.synergyScore || 'N/A';
-                combinedSynergy.className = `stat-value ${matchup.synergyScore > 70 ? 'positive' : matchup.synergyScore < 50 ? 'negative' : 'neutral'}`;
+                const isReversed = matchup.champion1 === champ2.id;
+                const matchupData = isReversed ? {
+                    ...matchup,
+                    winRate: 100 - matchup.winRate,
+                    lanePhase: {
+                        early: matchup.lanePhase?.late || 'Even',
+                        mid: matchup.lanePhase?.mid || 'Even',
+                        late: matchup.lanePhase?.early || 'Even'
+                    }
+                } : matchup;
+
+                combinedSynergy.textContent = matchupData.synergyScore || 'N/A';
+                combinedSynergy.className = `synergy-value ${matchupData.synergyScore > 70 ? 'positive' : matchupData.synergyScore < 50 ? 'negative' : 'neutral'}`;
                 
-                synergyDesc.textContent = matchup.description || `Standard matchup between ${champ1.name} and ${champ2.name}`;
+                synergyDesc.textContent = matchupData.description || `Standard matchup between ${champ1.name} and ${champ2.name}`;
                 
                 // Update lane phase info
-                if (matchup.lanePhase) {
+                if (matchupData.lanePhase) {
                     lanePhaseElement.innerHTML = `
                         <h4>Lane Phase</h4>
                         <div class="lane-phase-container">
                             <div class="phase-item">
                                 <div class="phase-name">Early Game</div>
-                                <div class="phase-value">${matchup.lanePhase.early}</div>
+                                <div class="phase-value">${matchupData.lanePhase.early}</div>
                             </div>
                             <div class="phase-item">
                                 <div class="phase-name">Mid Game</div>
-                                <div class="phase-value">${matchup.lanePhase.mid}</div>
+                                <div class="phase-value">${matchupData.lanePhase.mid}</div>
                             </div>
                             <div class="phase-item">
                                 <div class="phase-name">Late Game</div>
-                                <div class="phase-value">${matchup.lanePhase.late}</div>
+                                <div class="phase-value">${matchupData.lanePhase.late}</div>
                             </div>
                         </div>
                     `;
@@ -240,53 +274,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Update tips
-                if (matchup.tips?.length > 0) {
-                    tipsList.innerHTML = matchup.tips.map(tip => `<li>${tip}</li>`).join('');
+                if (matchupData.tips?.length > 0) {
+                    tipsList.innerHTML = matchupData.tips.map(tip => `<li>${tip}</li>`).join('');
                 } else {
                     tipsList.innerHTML = '<li>No specific tips available for this matchup</li>';
                 }
                 
                 // Render counter picks if available
-                if (matchup.counters?.length > 0) {
-                    counterPicksGrid.innerHTML = matchup.counters.map(counter => `
-                        <div class="pick-item">
-                            <div class="pick-icon">
-                                <img src="${counter.image}" alt="${counter.name}">
-                                <div class="pick-tier tier-${champions.find(c => c.id === counter.id)?.stats?.tier || 'N'}">
-                                    ${champions.find(c => c.id === counter.id)?.stats?.tier || 'N'}
+                if (matchupData.counters?.length > 0) {
+                    counterPicksGrid.innerHTML = matchupData.counters.map(counter => {
+                        const champ = champions.find(c => c.id === counter.id);
+                        return `
+                            <div class="pick-item">
+                                <div class="pick-icon">
+                                    <img src="${counter.image}" alt="${counter.name}">
+                                    <div class="pick-tier tier-${champ?.stats?.tier || 'N'}">
+                                        ${champ?.stats?.tier || 'N'}
+                                    </div>
                                 </div>
+                                <div class="pick-name">${counter.name}</div>
+                                <div class="pick-value ${counter.winRate > 50 ? 'win-value' : 'loss-value'}">${counter.winRate}%</div>
+                                <div class="pick-reason">${counter.reason}</div>
                             </div>
-                            <div class="pick-name">${counter.name}</div>
-                            <div class="pick-value ${counter.winRate > 50 ? 'win-value' : 'loss-value'}">${counter.winRate}%</div>
-                            <div class="pick-reason">${counter.reason}</div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
                     counterPicksGrid.innerHTML = '<div class="empty-message">No counter picks data available</div>';
                 }
                 
                 // Render synergies if available
-                if (matchup.synergies?.length > 0) {
-                    synergiesGrid.innerHTML = matchup.synergies.map(synergy => `
-                        <div class="pick-item">
-                            <div class="pick-icon">
-                                <img src="${synergy.image}" alt="${synergy.name}">
-                                <div class="pick-tier tier-${champions.find(c => c.id === synergy.id)?.stats?.tier || 'N'}">
-                                    ${champions.find(c => c.id === synergy.id)?.stats?.tier || 'N'}
+                if (matchupData.synergies?.length > 0) {
+                    synergiesGrid.innerHTML = matchupData.synergies.map(synergy => {
+                        const champ = champions.find(c => c.id === synergy.id);
+                        return `
+                            <div class="pick-item">
+                                <div class="pick-icon">
+                                    <img src="${synergy.image}" alt="${synergy.name}">
+                                    <div class="pick-tier tier-${champ?.stats?.tier || 'N'}">
+                                        ${champ?.stats?.tier || 'N'}
+                                    </div>
                                 </div>
+                                <div class="pick-name">${synergy.name}</div>
+                                <div class="pick-value ${synergy.winRate > 50 ? 'win-value' : 'loss-value'}">${synergy.winRate}%</div>
+                                <div class="pick-reason">${synergy.reason}</div>
                             </div>
-                            <div class="pick-name">${synergy.name}</div>
-                            <div class="pick-value ${synergy.winRate > 50 ? 'win-value' : 'loss-value'}">${synergy.winRate}%</div>
-                            <div class="pick-reason">${synergy.reason}</div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
                     synergiesGrid.innerHTML = '<div class="empty-message">No synergies data available</div>';
                 }
             } else {
                 // No matchup data found
                 combinedSynergy.textContent = 'N/A';
-                combinedSynergy.className = 'stat-value neutral';
+                combinedSynergy.className = 'synergy-value neutral';
                 synergyDesc.textContent = `No specific matchup data available for ${champ1.name} vs ${champ2.name}. Showing general stats.`;
                 
                 // Show default lane phase
@@ -324,6 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
             analysisData.style.display = 'block';
         } catch (error) {
             console.error("Error analyzing matchup:", error);
+            synergyDesc.textContent = `Error analyzing matchup between ${champ1.name} and ${champ2.name}`;
         }
     }
 
@@ -346,6 +387,18 @@ document.addEventListener('DOMContentLoaded', function() {
             renderChampions(filtered);
         });
     }
+
+    firstSelectedContainer.addEventListener('click', () => {
+        if (state.selectedChampions[0]) {
+            selectChampion(state.selectedChampions[0]);
+        }
+    });
+
+    secondSelectedContainer.addEventListener('click', () => {
+        if (state.selectedChampions[1]) {
+            selectChampion(state.selectedChampions[1]);
+        }
+    });
 
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
