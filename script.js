@@ -1,6 +1,6 @@
 // Global data objects
-window.championsData = champions; // Using the champions array from mockData.js
-window.matchupsData = matchups; // Using the matchups array from mockData.js
+window.championsData = champions;
+window.matchupsData = matchups;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Check if data is available
@@ -28,19 +28,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const counterPicksGrid = document.getElementById('counter-picks-grid');
     const synergiesGrid = document.getElementById('synergies-grid');
     const resetButton = document.querySelector('.reset-button');
+    const lanePhaseElement = document.getElementById('lane-phase');
+    const tipsList = document.getElementById('tips-list');
+    const champ1Stats = document.getElementById('champ1-stats');
+    const champ2Stats = document.getElementById('champ2-stats');
+    const champ1Abilities = document.getElementById('champ1-abilities');
+    const champ2Abilities = document.getElementById('champ2-abilities');
     
     // State
     const state = {
         selectedChampions: []
     };
 
-    // Ensure all elements exist
-    if (!grid) {
-        console.error("Champion grid element not found!");
-        return;
-    }
-
-    // Render champions
+    // Render champions with tier badges
     function renderChampions(champs) {
         try {
             grid.innerHTML = '';
@@ -62,7 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     champElement.classList.add('selected');
                 }
                 
-                champElement.innerHTML = `<img src="${champ.image}" alt="${champ.name}" title="${champ.name}">`;
+                champElement.innerHTML = `
+                    <img src="${champ.image}" alt="${champ.name}" title="${champ.name}">
+                    <div class="champion-tier tier-${champ.stats?.tier || 'N'}">${champ.stats?.tier || 'N'}</div>
+                `;
                 champElement.addEventListener('click', () => selectChampion(champ));
                 grid.appendChild(champElement);
             });
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Update selection UI
+    // Update selection UI and stats
     function updateSelectionUI() {
         try {
             const [first, second] = state.selectedChampions;
@@ -117,6 +120,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 firstSelected.querySelector('img').alt = first.name;
                 firstName.textContent = first.name;
                 firstSelected.classList.add('selected');
+                
+                // Update champion 1 stats
+                updateChampionStats(first, champ1Stats, champ1Abilities);
             }
             
             // Update second slot
@@ -125,13 +131,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 secondSelected.querySelector('img').alt = second.name;
                 secondName.textContent = second.name;
                 secondSelected.classList.add('selected');
+                
+                // Update champion 2 stats
+                updateChampionStats(second, champ2Stats, champ2Abilities);
             }
         } catch (error) {
             console.error("Error updating selection UI:", error);
         }
     }
+    
+    // Update champion stats display
+    function updateChampionStats(champion, statsContainer, abilitiesContainer) {
+        if (!champion || !statsContainer || !abilitiesContainer) return;
+        
+        // Update stats
+        statsContainer.innerHTML = `
+            <div class="stat-item">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value ${getWinRateClass(champion.stats?.winRate)}">${champion.stats?.winRate || 'N/A'}%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Pick Rate</div>
+                <div class="stat-value">${champion.stats?.pickRate || 'N/A'}%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Ban Rate</div>
+                <div class="stat-value">${champion.stats?.banRate || 'N/A'}%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">KDA</div>
+                <div class="stat-value">${champion.stats?.kda || 'N/A'}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Difficulty</div>
+                <div class="stat-value">${champion.stats?.difficulty || 'N/A'}/10</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Roles</div>
+                <div class="stat-value">${champion.roles?.join(', ') || 'N/A'}</div>
+            </div>
+        `;
+        
+        // Update abilities
+        abilitiesContainer.innerHTML = `
+            <h4>Abilities</h4>
+            ${champion.abilities?.map(ability => `
+                <div class="ability-item">
+                    <div class="ability-name">${ability.name}</div>
+                    <div class="ability-desc">${ability.description}</div>
+                </div>
+            `).join('') || '<div class="no-abilities">No abilities data</div>'}
+        `;
+    }
+    
+    // Helper function to determine win rate class
+    function getWinRateClass(winRate) {
+        if (!winRate) return '';
+        return winRate > 52 ? 'positive' : winRate < 48 ? 'negative' : 'neutral';
+    }
 
-    // Analyze matchup
+    // Analyze matchup with all available data
     function analyzeMatchup() {
         const [champ1, champ2] = state.selectedChampions;
         if (!champ1 || !champ2) return;
@@ -143,14 +202,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 (m.champion1 === champ2.id && m.champion2 === champ1.id)
             );
 
-            // Set champion winrates
+            // Set champion winrates with color coding
             champ1Winrate.textContent = champ1.stats?.winRate ? `${champ1.stats.winRate}%` : 'N/A';
+            champ1Winrate.className = `stat-value ${getWinRateClass(champ1.stats?.winRate)}`;
+            
             champ2Winrate.textContent = champ2.stats?.winRate ? `${champ2.stats.winRate}%` : 'N/A';
+            champ2Winrate.className = `stat-value ${getWinRateClass(champ2.stats?.winRate)}`;
 
             // Set matchup data or default
             if (matchup) {
                 combinedSynergy.textContent = matchup.synergyScore || 'N/A';
+                combinedSynergy.className = `stat-value ${matchup.synergyScore > 70 ? 'positive' : matchup.synergyScore < 50 ? 'negative' : 'neutral'}`;
+                
                 synergyDesc.textContent = matchup.description || `Standard matchup between ${champ1.name} and ${champ2.name}`;
+                
+                // Update lane phase info
+                if (matchup.lanePhase) {
+                    lanePhaseElement.innerHTML = `
+                        <h4>Lane Phase</h4>
+                        <div class="lane-phase-container">
+                            <div class="phase-item">
+                                <div class="phase-name">Early Game</div>
+                                <div class="phase-value">${matchup.lanePhase.early}</div>
+                            </div>
+                            <div class="phase-item">
+                                <div class="phase-name">Mid Game</div>
+                                <div class="phase-value">${matchup.lanePhase.mid}</div>
+                            </div>
+                            <div class="phase-item">
+                                <div class="phase-name">Late Game</div>
+                                <div class="phase-value">${matchup.lanePhase.late}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    lanePhaseElement.innerHTML = '<div class="empty-message">No lane phase data available</div>';
+                }
+                
+                // Update tips
+                if (matchup.tips?.length > 0) {
+                    tipsList.innerHTML = matchup.tips.map(tip => `<li>${tip}</li>`).join('');
+                } else {
+                    tipsList.innerHTML = '<li>No specific tips available for this matchup</li>';
+                }
                 
                 // Render counter picks if available
                 if (matchup.counters?.length > 0) {
@@ -158,9 +252,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="pick-item">
                             <div class="pick-icon">
                                 <img src="${counter.image}" alt="${counter.name}">
+                                <div class="pick-tier tier-${champions.find(c => c.id === counter.id)?.stats?.tier || 'N'}">
+                                    ${champions.find(c => c.id === counter.id)?.stats?.tier || 'N'}
+                                </div>
                             </div>
                             <div class="pick-name">${counter.name}</div>
                             <div class="pick-value ${counter.winRate > 50 ? 'win-value' : 'loss-value'}">${counter.winRate}%</div>
+                            <div class="pick-reason">${counter.reason}</div>
                         </div>
                     `).join('');
                 } else {
@@ -173,9 +271,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="pick-item">
                             <div class="pick-icon">
                                 <img src="${synergy.image}" alt="${synergy.name}">
+                                <div class="pick-tier tier-${champions.find(c => c.id === synergy.id)?.stats?.tier || 'N'}">
+                                    ${champions.find(c => c.id === synergy.id)?.stats?.tier || 'N'}
+                                </div>
                             </div>
                             <div class="pick-name">${synergy.name}</div>
                             <div class="pick-value ${synergy.winRate > 50 ? 'win-value' : 'loss-value'}">${synergy.winRate}%</div>
+                            <div class="pick-reason">${synergy.reason}</div>
                         </div>
                     `).join('');
                 } else {
@@ -184,9 +286,36 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // No matchup data found
                 combinedSynergy.textContent = 'N/A';
+                combinedSynergy.className = 'stat-value neutral';
                 synergyDesc.textContent = `No specific matchup data available for ${champ1.name} vs ${champ2.name}. Showing general stats.`;
                 
-                // Show default counters/synergies from champion data if available
+                // Show default lane phase
+                lanePhaseElement.innerHTML = `
+                    <h4>Lane Phase</h4>
+                    <div class="lane-phase-container">
+                        <div class="phase-item">
+                            <div class="phase-name">Early Game</div>
+                            <div class="phase-value">Skill matchup</div>
+                        </div>
+                        <div class="phase-item">
+                            <div class="phase-name">Mid Game</div>
+                            <div class="phase-value">Skill matchup</div>
+                        </div>
+                        <div class="phase-item">
+                            <div class="phase-name">Late Game</div>
+                            <div class="phase-value">Depends on team comp</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Show default tips
+                tipsList.innerHTML = `
+                    <li>Focus on your champion's strengths</li>
+                    <li>Watch for jungle ganks</li>
+                    <li>Build items that counter the opponent</li>
+                `;
+                
+                // Show default counters/synergies
                 counterPicksGrid.innerHTML = '<div class="empty-message">No counter picks data available for this matchup</div>';
                 synergiesGrid.innerHTML = '<div class="empty-message">No synergies data available for this matchup</div>';
             }
@@ -226,14 +355,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const tabId = this.id;
             const counterSection = document.getElementById('counter-picks-section');
             const synergySection = document.getElementById('synergies-section');
+            const overviewSection = document.getElementById('overview-section');
             
             if (tabId === 'overview-tab') {
+                overviewSection.style.display = 'block';
                 counterSection.style.display = 'block';
                 synergySection.style.display = 'block';
             } else if (tabId === 'counter-tab') {
+                overviewSection.style.display = 'none';
                 counterSection.style.display = 'block';
                 synergySection.style.display = 'none';
             } else if (tabId === 'synergy-tab') {
+                overviewSection.style.display = 'none';
                 counterSection.style.display = 'none';
                 synergySection.style.display = 'block';
             }
